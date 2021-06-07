@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: bookshelf-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/permanent-redirect-code: "301"
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /training-0/(.*)
+            backend:
+              serviceName: bookshelf-service
+              servicePort: 80

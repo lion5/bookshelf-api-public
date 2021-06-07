@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: bookshelf
+  name: bookshelf-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bookshelf
+  template:
+    metadata:
+      labels:
+        app: bookshelf
+    spec:
+      containers:
+      - image: 935581097791.dkr.ecr.eu-central-1.amazonaws.com/bookshelf:training-0
+        name: bookshelf
+        ports:
+        - containerPort: 8080
