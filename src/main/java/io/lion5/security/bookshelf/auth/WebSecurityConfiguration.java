@@ -34,16 +34,6 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
             .anyRequest().authenticated();
     }
 
-    @Override
-    protected UserDetailsService userDetailsService() {
-        InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
-        manager.createUser(User.withDefaultPasswordEncoder()
-                               .username("user")
-                               .password("secret")
-                               .authorities(List.of())
-                               .build());
-        return manager;
-    }
 
     @Bean
     public HttpFirewall httpFirewall() {
