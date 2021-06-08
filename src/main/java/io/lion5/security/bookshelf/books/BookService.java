@@ -12,6 +12,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 /**
@@ -34,7 +36,7 @@ public class BookService {
                 createBookRequest.getTitle(),
                 createBookRequest.getAuthor(),
                 createBookRequest.getPublishedDate(),
-                "" // getAuthenticatedUser()
+                getUsername()
         );
 
         return fromEntity(bookRepository.save(entity));
@@ -86,6 +88,7 @@ public class BookService {
         entity.setTitle(book.getTitle());
         entity.setAuthor(book.getAuthor());
         entity.setPublishedDate(book.getPublishedDate());
+        entity.setLastUpdatedBy(getUsername());
 
         return Optional.of(fromEntity(bookRepository.save(entity)));
     }
@@ -114,5 +117,14 @@ public class BookService {
                 entity.getCreatedBy(),
                 entity.getLastUpdatedBy()
         );
+    }
+
+    private String getUsername() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            return null;
+        }
+
+        return authentication.getName();
     }
 }
