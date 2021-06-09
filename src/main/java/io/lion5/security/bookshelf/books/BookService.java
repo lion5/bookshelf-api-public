@@ -1,15 +1,8 @@
 package io.lion5.security.bookshelf.books;
 
-import java.math.BigInteger;
-import java.sql.Date;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,12 +17,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class BookService {
 
-    private final EntityManager entityManager;
     private final BookRepository bookRepository;
 
     @Autowired
-    public BookService(EntityManager entityManager, BookRepository bookRepository) {
-        this.entityManager = entityManager;
+    public BookService(BookRepository bookRepository) {
         this.bookRepository = bookRepository;
     }
 
@@ -51,22 +42,9 @@ public class BookService {
     }
 
     public List<Book> getBooksOfUser(String username) {
-        Query query = entityManager.createNativeQuery("SELECT id, title, author, published_date, created_by, last_updated_by FROM book WHERE created_by = '" + username + "';");
-
-        @SuppressWarnings("unchecked")
-        List<Object[]> results = query.getResultList();
-
-        List<Book> books = new ArrayList<>();
-        for (Object[] row : results) {
-            books.add(new Book(
-                    ((BigInteger) row[0]).longValueExact(),
-                    (String) row[1],
-                    (String) row[2],
-                    ((Date) row[3]).toLocalDate()
-            ));
-        }
-
-        return Collections.unmodifiableList(books);
+        return bookRepository.findAllByCreatedBy(username).stream()
+                             .map(this::fromEntity)
+                             .collect(Collectors.toUnmodifiableList());
     }
 
     public Optional<Book> getBookById(long id) {
