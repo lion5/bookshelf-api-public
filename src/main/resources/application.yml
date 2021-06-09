@@ -12,3 +12,10 @@ spring:
           issuer-uri: https://cognito-idp.eu-central-1.amazonaws.com/eu-central-1_LhosH47nC
           jwk-set-uri: https://cognito-idp.eu-central-1.amazonaws.com/eu-central-1_LhosH47nC/.well-known/jwks.json
 
+ratelimiting:
+  unauthenticated:
+    limit: 5
+    refill: PT5M # 5 minutes
+  authenticated:
+    limit: 10
+    refill: PT5M # 5 minutes
