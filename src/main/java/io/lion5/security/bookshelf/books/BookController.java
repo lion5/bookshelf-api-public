@@ -54,12 +54,12 @@ public class BookController {
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Book> updateBook(@PathVariable("id") long id, @RequestBody Book book) {
+    public ResponseEntity<Book> updateBook(@PathVariable("id") long id, @RequestBody Book book) throws UnauthorizedModificationException {
         return ResponseEntity.of(bookService.updateBook(book));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> deleteBook(@PathVariable("id") long id) {
+    public ResponseEntity<Object> deleteBook(@PathVariable("id") long id) throws UnauthorizedModificationException {
         bookService.deleteBook(id);
         return ResponseEntity.noContent().build();
     }

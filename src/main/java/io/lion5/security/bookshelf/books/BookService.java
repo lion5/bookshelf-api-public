@@ -12,7 +12,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -72,18 +74,23 @@ public class BookService {
                              .map(this::fromEntity);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public Optional<BookAudit> getBookAuditById(long id) {
         return bookRepository.findById(id)
                              .map(this::auditFromEntity);
     }
 
-    public Optional<Book> updateBook(Book book) {
+    public Optional<Book> updateBook(Book book) throws UnauthorizedModificationException {
         Optional<BookEntity> optionalBook = bookRepository.findById(book.getId());
         if (optionalBook.isEmpty()) {
             return Optional.empty();
         }
 
         BookEntity entity = optionalBook.get();
+
+        if (!canModify(entity)) {
+            throw new UnauthorizedModificationException();
+        }
 
         entity.setTitle(book.getTitle());
         entity.setAuthor(book.getAuthor());
@@ -93,10 +100,14 @@ public class BookService {
         return Optional.of(fromEntity(bookRepository.save(entity)));
     }
 
-    public void deleteBook(long id) {
+    public void deleteBook(long id) throws UnauthorizedModificationException {
         Optional<BookEntity> optionalBook = bookRepository.findById(id);
         if (optionalBook.isEmpty()) {
             return;
+        }
+
+        if (!canModify(optionalBook.get())) {
+            throw new UnauthorizedModificationException();
         }
 
         bookRepository.delete(optionalBook.get());
@@ -126,5 +137,20 @@ public class BookService {
         }
 
         return authentication.getName();
+    }
+
+    private boolean canModify(BookEntity entity) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            return false;
+        }
+
+        for (GrantedAuthority authority : authentication.getAuthorities()) {
+            if (authority.getAuthority().equals("ROLE_ADMIN")) {
+                return true;
+            }
+        }
+
+        return entity.getAuthor().equals(authentication.getName());
     }
 }

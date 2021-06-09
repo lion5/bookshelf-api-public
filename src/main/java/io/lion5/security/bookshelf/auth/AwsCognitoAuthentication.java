@@ -1,20 +1,21 @@
 package io.lion5.security.bookshelf.auth;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 public class AwsCognitoAuthentication extends AbstractAuthenticationToken {
 
     private final Jwt jwt;
 
-    public AwsCognitoAuthentication(Jwt jwt, Collection<? extends GrantedAuthority> authorities) {
-        super(authorities);
+    public AwsCognitoAuthentication(Jwt jwt) {
+        super(extractAuthorities(jwt));
         this.jwt = jwt;
-        setAuthenticated(true);
+        this.setAuthenticated(true);
     }
 
     @Override
@@ -44,5 +45,14 @@ public class AwsCognitoAuthentication extends AbstractAuthenticationToken {
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), jwt);
+    }
+
+    private static List<GrantedAuthority> extractAuthorities(Jwt jwt) {
+        List<String> groups = jwt.getClaimAsStringList("cognito:groups");
+        if (groups == null || !groups.contains("Admin")) {
+            return List.of();
+        }
+
+        return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
     }
 }
