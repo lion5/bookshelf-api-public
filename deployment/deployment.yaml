@@ -16,6 +16,7 @@ spec:
     spec:
       containers:
       - image: 935581097791.dkr.ecr.eu-central-1.amazonaws.com/bookshelf:training-0
+        imagePullPolicy: Always
         name: bookshelf
         ports:
         - containerPort: 8080
