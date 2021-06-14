@@ -4,6 +4,11 @@ registry=935581097791.dkr.ecr.eu-central-1.amazonaws.com
 training="training-$1"
 image=$registry/bookshelf:$training
 
+if [ -z "$1" ]; then
+  echo "Usage: ./deploy.sh <your-group-number>"
+  exit 1
+fi
+
 echo "Building image $image"
 
 aws eks --region eu-central-1 update-kubeconfig --name training-eks-cluster --role "arn:aws:iam::935581097791:role/EKSNamespace$1"
@@ -16,3 +21,4 @@ rm -rf deployment/deployment.yaml
 mv tmp.yaml deployment/deployment.yaml
 yq e '.spec.rules[0].http.paths[0].path = "/training-'"$1"'/(.*)"' -i  deployment/ingress.yaml
 kubectl apply -n "$training" -f deployment/.
+kubectl rollout restart -n "$training" deployment bookshelf-deployment
